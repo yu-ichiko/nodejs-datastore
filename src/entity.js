@@ -443,6 +443,59 @@ function entityFromEntityProto(entityProto) {
 entity.entityFromEntityProto = entityFromEntityProto;
 
 /**
+ * Convert any entity protocol to a plain array.
+ *
+ * @private
+ * @param {object} entityProto The protocol entity object to convert.
+ * @returns {object}
+ *
+ * @example
+ * entityFromEntityProto({
+ *   properties: {
+ *     map: {
+ *       name: {
+ *         value: {
+ *           valueType: 'stringValue',
+ *           stringValue: 'Stephen'
+ *         }
+ *       }
+ *     }
+ *   }
+ * });
+ * // {
+ * //   data: [
+ * //     {
+ * //       name: 'name',
+ * //       value: 'Stephen',
+ * //       excludeFromIndexes: false,
+ * //       valueType: 'stringValue'
+ * //     }
+ * //   ]
+ * // }
+ */
+function entityArrayFromEntityProto(entityProto) {
+  var entityArray = [];
+
+  var properties = entityProto.properties || {};
+
+  for (var property in properties) {
+    var value = properties[property];
+    entityArray.push({
+      name: property,
+      value: entity.decodeValueProto(value),
+      excludeFromIndexes: value.excludeFromIndexes,
+      valueType: value.valueType,
+    });
+  }
+
+  return {
+    data: entityArray,
+  };
+}
+
+entity.entityArrayFromEntityProto = entityArrayFromEntityProto;
+
+/**
  * Convert an entity object to an entity protocol object.
  *
  * @private
@@ -556,6 +609,8 @@ entity.entityToEntityProto = entityToEntityProto;
  * @param {object[]} results The response array.
  * @param {object} results.entity An entity object.
  * @param {object} results.entity.key The entity's key.
+ * @param {object} [option] option
+ * @param {boolean} [option.isEntityArray]
  * @returns {object[]}
  *
  * @example
@@ -570,9 +625,15 @@ entity.entityToEntityProto = entityToEntityProto;
  *   //
  * });
  */
-function formatArray(results) {
+function formatArray(results, option) {
+  var isEntityArray = (option && option.isEntityArray) || false;
   return results.map(function(result) {
-    var ent = entity.entityFromEntityProto(result.entity);
+    var ent = {};
+    if (isEntityArray) {
+      ent = entity.entityArrayFromEntityProto(result.entity);
+    } else {
+      ent = entity.entityFromEntityProto(result.entity);
+    }
     ent[entity.KEY_SYMBOL] = entity.keyFromKeyProto(result.entity.key);
     return ent;
   });
