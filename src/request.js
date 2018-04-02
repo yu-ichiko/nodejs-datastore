@@ -261,7 +261,7 @@ DatastoreRequest.prototype.createReadStream = function(keys, options) {
           return;
         }
 
-        var entities = entity.formatArray(resp.found, options);
+        var entities = entity.formatArray(resp.found, options.pretty);
         var nextKeys = (resp.deferred || [])
           .map(entity.keyFromKeyProto)
           .map(entity.keyToKeyProto);
@@ -692,7 +692,7 @@ DatastoreRequest.prototype.runQueryStream = function(query, options) {
     var entities = [];
 
     if (resp.batch.entityResults) {
-      entities = entity.formatArray(resp.batch.entityResults, options);
+      entities = entity.formatArray(resp.batch.entityResults, options.pretty);
     }
 
     // Emit each result right away, then get the rest if necessary.

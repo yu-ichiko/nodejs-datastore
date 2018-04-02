@@ -232,6 +232,7 @@ entity.isDsKey = isDsKey;
  *
  * @private
  * @param {object} valueProto The protobuf Value message to convert.
+ * @param {boolean} [isPretty] pretty option
  * @returns {*}
  *
  * @example
@@ -250,12 +251,15 @@ entity.isDsKey = isDsKey;
  * });
  * // <Buffer 68 65 6c 6c 6f>
  */
-function decodeValueProto(valueProto) {
+function decodeValueProto(valueProto, isPretty) {
   var valueType = valueProto.valueType;
   var value = valueProto[valueType];
 
   switch (valueType) {
     case 'arrayValue': {
+      if (isPretty) {
+        return value.values;
+      }
       return value.values.map(entity.decodeValueProto);
     }
 
@@ -276,6 +280,9 @@ function decodeValueProto(valueProto) {
     }
 
     case 'entityValue': {
+      if (isPretty) {
+        return entity.entityPrettyFromEntityProto(value);
+      }
       return entity.entityFromEntityProto(value);
     }
 
@@ -434,7 +441,7 @@ function entityFromEntityProto(entityProto) {
 
   for (var property in properties) {
     var value = properties[property];
-    entityObject[property] = entity.decodeValueProto(value);
+    entityObject[property] = entity.decodeValueProto(value, false);
   }
 
   return entityObject;
@@ -473,7 +480,7 @@ entity.entityFromEntityProto = entityFromEntityProto;
  * //   ]
  * // }
  */
-function entityArrayFromEntityProto(entityProto) {
+function entityPrettyFromEntityProto(entityProto) {
   var entityArray = [];
 
   var properties = entityProto.properties || {};
@@ -482,7 +489,7 @@ function entityArrayFromEntityProto(entityProto) {
     var value = properties[property];
     entityArray.push({
       name: property,
-      value: entity.decodeValueProto(value),
+      value: entity.decodeValueProto(value, true),
       excludeFromIndexes: value.excludeFromIndexes,
       valueType: value.valueType,
     });
@@ -493,7 +500,7 @@ function entityArrayFromEntityProto(entityProto) {
   };
 }
 
-entity.entityArrayFromEntityProto = entityArrayFromEntityProto;
+entity.entityPrettyFromEntityProto = entityPrettyFromEntityProto;
 
 /**
  * Convert an entity object to an entity protocol object.
@@ -609,8 +616,7 @@ entity.entityToEntityProto = entityToEntityProto;
  * @param {object[]} results The response array.
  * @param {object} results.entity An entity object.
  * @param {object} results.entity.key The entity's key.
- * @param {object} [option] option
- * @param {boolean} [option.isEntityArray]
+ * @param {boolean} [isPretty] pretty option
  * @returns {object[]}
  *
  * @example
@@ -625,12 +631,11 @@ entity.entityToEntityProto = entityToEntityProto;
  *   //
  * });
  */
-function formatArray(results, option) {
-  var isEntityArray = (option && option.isEntityArray) || false;
+function formatArray(results, isPretty) {
   return results.map(function(result) {
     var ent = {};
-    if (isEntityArray) {
-      ent = entity.entityArrayFromEntityProto(result.entity);
+    if (isPretty) {
+      ent = entity.entityPrettyFromEntityProto(result.entity);
     } else {
       ent = entity.entityFromEntityProto(result.entity);
     }
