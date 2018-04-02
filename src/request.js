@@ -380,6 +380,7 @@ DatastoreRequest.prototype.delete = function(keys, gaxOptions, callback) {
  *     [here](https://cloud.google.com/datastore/docs/articles/balancing-strong-and-eventual-consistency-with-google-cloud-datastore).
  * @param {object} [options.gaxOptions] Request configuration options, outlined
  *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+ * @param {boolean} [options.pretty] return value is pretty data
  * @param {function} callback The callback function.
  * @param {?error} callback.err An error returned while making this request
  * @param {object|object[]} callback.entity The entity object(s) which match
