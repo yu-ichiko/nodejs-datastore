@@ -272,16 +272,10 @@ function decodeValueProto(valueProto, isPretty) {
     }
 
     case 'doubleValue': {
-      if (isPretty) {
-        return value;
-      }
       return parseFloat(value, 10);
     }
 
     case 'integerValue': {
-      if (isPretty) {
-        return value;
-      }
       return parseInt(value, 10);
     }
 
